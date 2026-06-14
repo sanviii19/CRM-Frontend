@@ -1,0 +1,137 @@
+.top-nav {
+  height: var(--header-height);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.page-title-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.breadcrumbs {
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+.breadcrumbs .separator {
+  margin: 0 4px;
+  opacity: 0.5;
+}
+
+.top-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar input {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 8px 16px 8px 36px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  width: 240px;
+  transition: all var(--transition-normal);
+  outline: none;
+}
+
+.search-bar input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  width: 280px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  pointer-events: none;
+}
+
+.icon-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.icon-button:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  transform: translateY(-1px);
+}
+
+.icon-button .badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--danger);
+  border-radius: 50%;
+  border: 2px solid var(--bg-tertiary);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding-left: 12px;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.user-role {
+  font-size: 0.75rem;
+}
