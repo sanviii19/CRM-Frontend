@@ -49,7 +49,7 @@ const CampaignDetails = () => {
 
   // Connect to Socket.io for live metric updates
   useEffect(() => {
-    const socket = io('http://localhost:5000');
+    const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
     
     socket.emit('join-campaign', id);
     
