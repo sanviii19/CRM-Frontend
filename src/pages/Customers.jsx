@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { Search, Filter, MoreHorizontal, UserPlus } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 
 const Customers = () => {
   const [customers, setCustomers] = useState([]);
@@ -10,17 +10,24 @@ const Customers = () => {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [cityFilter, setCityFilter] = useState('');
+  const [tagFilter, setTagFilter] = useState('');
+  const [debouncedCity, setDebouncedCity] = useState('');
+  const [debouncedTag, setDebouncedTag] = useState('');
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
+      setDebouncedCity(cityFilter);
+      setDebouncedTag(tagFilter);
     }, 300);
     return () => clearTimeout(handler);
-  }, [searchTerm]);
+  }, [searchTerm, cityFilter, tagFilter]);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, debouncedCity, debouncedTag]);
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -33,6 +40,12 @@ const Customers = () => {
         if (debouncedSearchTerm) {
           query.append('search', debouncedSearchTerm);
         }
+        if (debouncedCity) {
+          query.append('city', debouncedCity);
+        }
+        if (debouncedTag) {
+          query.append('tag', debouncedTag);
+        }
         const response = await api.get(`/customers?${query.toString()}`);
         setCustomers(response.data.data || []);
       } catch (error) {
@@ -42,7 +55,7 @@ const Customers = () => {
       }
     };
     fetchCustomers();
-  }, [page, debouncedSearchTerm]);
+  }, [page, debouncedSearchTerm, debouncedCity, debouncedTag]);
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -51,13 +64,10 @@ const Customers = () => {
           <h2 style={{ fontSize: '1.5rem', marginBottom: '4px' }}>Customer Directory</h2>
           <p className="text-muted">Manage your customer database and tags.</p>
         </div>
-        <Button variant="primary" icon={<UserPlus size={18} />}>
-          Add Customer
-        </Button>
       </div>
 
       <Card>
-        <div className="flex-between" style={{ marginBottom: '24px' }}>
+        <div className="flex-between" style={{ marginBottom: showFilters ? '16px' : '24px' }}>
           <div className="search-bar" style={{ width: '320px' }}>
             <Search size={18} className="search-icon text-muted" />
             <input 
@@ -68,10 +78,40 @@ const Customers = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" icon={<Filter size={18} />}>
+          <Button variant={showFilters ? 'primary' : 'outline'} icon={<Filter size={18} />} onClick={() => setShowFilters(!showFilters)}>
             Filter
           </Button>
         </div>
+
+        {showFilters && (
+          <div className="animate-fade-in" style={{ display: 'flex', gap: '16px', marginBottom: '24px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>City</label>
+              <input 
+                type="text" 
+                placeholder="Filter by city..." 
+                style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)' }}
+                value={cityFilter}
+                onChange={(e) => setCityFilter(e.target.value)}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Tag</label>
+              <input 
+                type="text" 
+                placeholder="Filter by tag..." 
+                style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-primary)' }}
+                value={tagFilter}
+                onChange={(e) => setTagFilter(e.target.value)}
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <Button variant="ghost" onClick={() => { setCityFilter(''); setTagFilter(''); }}>
+                Clear
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
@@ -81,7 +121,7 @@ const Customers = () => {
                 <th style={{ padding: '12px 0', fontWeight: '500' }}>Contact</th>
                 <th style={{ padding: '12px 0', fontWeight: '500' }}>Location</th>
                 <th style={{ padding: '12px 0', fontWeight: '500' }}>Tags</th>
-                <th style={{ padding: '12px 0', fontWeight: '500', textAlign: 'right' }}>Actions</th>
+                <th style={{ padding: '12px 0', fontWeight: '500', textAlign: 'right' }}>Last Order</th>
               </tr>
             </thead>
             <tbody>
@@ -122,7 +162,18 @@ const Customers = () => {
                       </div>
                     </td>
                     <td style={{ padding: '16px 0', textAlign: 'right' }}>
-                      <Button variant="ghost" size="sm" icon={<MoreHorizontal size={18} />} />
+                      {customer.orders && customer.orders.length > 0 ? (
+                        <>
+                          <div style={{ fontWeight: '500' }}>
+                            {new Date(customer.orders[0].purchasedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </div>
+                          <div className="text-muted" style={{ fontSize: '0.75rem' }}>
+                            {customer._count?.orders || 1} order{(customer._count?.orders || 1) !== 1 ? 's' : ''}
+                          </div>
+                        </>
+                      ) : (
+                        <span className="text-muted" style={{ fontSize: '0.875rem' }}>No orders</span>
+                      )}
                     </td>
                   </tr>
                 ))
