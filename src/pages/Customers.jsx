@@ -8,12 +8,32 @@ const Customers = () => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm]);
 
   useEffect(() => {
     const fetchCustomers = async () => {
       setLoading(true);
       try {
-        const response = await api.get(`/customers?page=${page}&limit=10`);
+        const query = new URLSearchParams({
+          page,
+          limit: 10,
+        });
+        if (debouncedSearchTerm) {
+          query.append('search', debouncedSearchTerm);
+        }
+        const response = await api.get(`/customers?${query.toString()}`);
         setCustomers(response.data.data || []);
       } catch (error) {
         console.error('Failed to fetch customers:', error);
@@ -22,7 +42,7 @@ const Customers = () => {
       }
     };
     fetchCustomers();
-  }, [page]);
+  }, [page, debouncedSearchTerm]);
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -40,7 +60,13 @@ const Customers = () => {
         <div className="flex-between" style={{ marginBottom: '24px' }}>
           <div className="search-bar" style={{ width: '320px' }}>
             <Search size={18} className="search-icon text-muted" />
-            <input type="text" placeholder="Search by name, email, or phone..." style={{ width: '100%' }} />
+            <input 
+              type="text" 
+              placeholder="Search by name, email, or phone..." 
+              style={{ width: '100%' }}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
           <Button variant="outline" icon={<Filter size={18} />}>
             Filter
