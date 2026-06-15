@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Sparkles, Send, TrendingUp, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Sparkles, Send, TrendingUp, Crown } from 'lucide-react';
 import './Sidebar.css';
 
 const Sidebar = () => {
@@ -24,8 +24,8 @@ const Sidebar = () => {
         <ul>
           {navItems.map((item) => (
             <li key={item.name}>
-              <NavLink 
-                to={item.path} 
+              <NavLink
+                to={item.path}
                 className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
               >
                 <span className="nav-icon">{item.icon}</span>
@@ -37,12 +37,6 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      <div className="sidebar-footer">
-        <button className="nav-link settings-btn">
-          <span className="nav-icon"><Settings size={20} /></span>
-          <span className="nav-text">Settings</span>
-        </button>
-      </div>
     </aside>
   );
 };

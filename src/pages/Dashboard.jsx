@@ -29,19 +29,11 @@ const Dashboard = () => {
 
   // Calculate metrics
   const global = stats?.globalMetrics || { sent: 0, delivered: 0, opened: 0, clicked: 0, converted: 0, failed: 0 };
-  const hasData = global.sent > 0;
   
-  const displayFunnel = hasData ? global : {
-    sent: 12500,
-    failed: 700,
-    delivered: 11800,
-    opened: 4200,
-    clicked: 1850,
-    converted: 420
-  };
+  const displayFunnel = global;
 
-  const openRate = hasData && global.delivered > 0 ? ((global.opened / global.delivered) * 100).toFixed(1) : '24.5';
-  const conversionRate = hasData && global.delivered > 0 ? ((global.converted / global.delivered) * 100).toFixed(1) : '3.2';
+  const openRate = global.delivered > 0 ? ((global.opened / global.delivered) * 100).toFixed(1) : '0.0';
+  const conversionRate = global.delivered > 0 ? ((global.converted / global.delivered) * 100).toFixed(1) : '0.0';
 
   const funnelMax = Math.max(displayFunnel.sent, 1);
   const funnelStages = [

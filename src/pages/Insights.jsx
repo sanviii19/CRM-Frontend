@@ -9,6 +9,8 @@ import './Insights.css';
 
 /* ── Mini Spark-line chart (pure SVG, no dependency) ── */
 const SparkLine = ({ data, color = '#6366f1', height = 80 }) => {
+  const [hoverIndex, setHoverIndex] = useState(null);
+
   if (!data || data.length < 2) return (
     <div className="ins-empty-spark">Not enough data yet</div>
   );
@@ -18,7 +20,7 @@ const SparkLine = ({ data, color = '#6366f1', height = 80 }) => {
   const max = Math.max(...values);
   const range = max - min || 1;
   const W = 560; const H = height;
-  const pad = 8;
+  const pad = 12; // Increased padding slightly to keep points completely visible
 
   const pts = data.map((d, i) => {
     const x = pad + (i / (data.length - 1)) * (W - pad * 2);
@@ -31,8 +33,8 @@ const SparkLine = ({ data, color = '#6366f1', height = 80 }) => {
   const fill = `${polyline} ${W - pad},${H} ${pad},${H}`;
 
   return (
-    <div className="ins-spark-wrap">
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="ins-spark-svg">
+    <div className="ins-spark-wrap" style={{ position: 'relative' }}>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="ins-spark-svg" onMouseLeave={() => setHoverIndex(null)}>
         <defs>
           <linearGradient id={`grad-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity="0.35" />
@@ -52,18 +54,62 @@ const SparkLine = ({ data, color = '#6366f1', height = 80 }) => {
           strokeLinecap="round"
         />
         {pts.map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="3.5" fill={color} opacity="0.85" />
+          <g key={i} 
+             onMouseEnter={() => setHoverIndex(i)} 
+             style={{ cursor: 'crosshair', outline: 'none' }}>
+            <circle cx={x} cy={y} r={hoverIndex === i ? "6" : "3.5"} fill={color} opacity="0.85" style={{ transition: 'r 0.2s ease-out' }} />
+            {/* Invisible larger circle for easier hover target */}
+            <circle cx={x} cy={y} r="16" fill="transparent" />
+          </g>
         ))}
       </svg>
 
-      {/* X-axis labels */}
-      <div className="ins-spark-labels">
-        {data.map((d, i) => (
-          <span key={i} className="ins-spark-label"
-            style={{ left: `${(i / (data.length - 1)) * 100}%` }}>
-            {d.label}
-          </span>
-        ))}
+      {/* Tooltip */}
+      {hoverIndex !== null && (
+        <div style={{
+          position: 'absolute',
+          left: `${(pts[hoverIndex][0] / W) * 100}%`,
+          top: `${(pts[hoverIndex][1] / H) * 100}%`,
+          transform: 'translate(-50%, calc(-100% - 12px))',
+          background: 'var(--bg-primary)',
+          border: '1px solid var(--border-active)',
+          padding: '8px 12px',
+          borderRadius: '8px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+          zIndex: 20,
+          pointerEvents: 'none',
+          whiteSpace: 'nowrap',
+          transition: 'all 0.1s ease-out',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '4px'
+        }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {data[hoverIndex].label}
+          </div>
+          <div style={{ fontSize: '1rem', fontWeight: 'bold', color: color }}>
+            {data[hoverIndex].value}%
+          </div>
+          {/* Tooltip triangle pointer */}
+          <div style={{
+            position: 'absolute',
+            bottom: '-5px',
+            left: '50%',
+            transform: 'translateX(-50%) rotate(45deg)',
+            width: '10px',
+            height: '10px',
+            background: 'var(--bg-primary)',
+            borderRight: '1px solid var(--border-active)',
+            borderBottom: '1px solid var(--border-active)'
+          }} />
+        </div>
+      )}
+
+      {/* Helper text */}
+      <div style={{ textAlign: 'center', marginTop: '12px', fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+        <MousePointerClick size={12} opacity={0.6} />
+        Hover over the points to view campaign details
       </div>
     </div>
   );
